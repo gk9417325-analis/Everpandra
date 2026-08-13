@@ -25,7 +25,7 @@ button{border:0;border-radius:999px;padding:14px 24px;font-weight:900;background
 <canvas id="game"></canvas>
 <div id="hud">
   <div class="pill">❤️ <span id="hp">3</span></div>
-  <div class="pill">🪙 <span id="coins">0</span> · <span id="distance">0</span>m</div>
+  <div class="pill">🪙 <span id="coins">0</span> · 👹 <span id="enemyCount">0</span> · <span id="distance">0</span>m</div>
 </div>
 <div id="intro">
   <div class="panel">
@@ -43,7 +43,7 @@ button{border:0;border-radius:999px;padding:14px 24px;font-weight:900;background
 
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
-let W,H,dpr, running=false, world=0, speed=4.2, coins=0, hp=3, spawn=0, attackTimer=0, shake=0, spawnCount=0;
+let W,H,dpr, running=false, world=0, speed=4.2, coins=0, hp=3, spawn=0, attackTimer=0, shake=0, enemySpawn=900;
 let p={x:0,y:0,vy:0,ground:true,frame:0,dir:1};
 let things=[];
 
@@ -52,7 +52,7 @@ addEventListener('resize',resize);resize();
 
 function reset(){
   p={x:W*.24,y:H*.70,vy:0,ground:true,frame:0,dir:1};
-  world=0;speed=4.2;coins=0;hp=3;spawn=0;attackTimer=0;shake=0;spawnCount=0;things=[];
+  world=0;speed=4.2;coins=0;hp=3;spawn=500;enemySpawn=900;attackTimer=0;shake=0;things=[];
 }
 function start(){
   reset();running=true;document.getElementById('intro').style.display='none';
@@ -69,14 +69,15 @@ addEventListener('keydown',e=>{
 c.addEventListener('pointerdown',e=>{if(running&&e.target===c)jump()});
 
 function addThing(){
-  let x=W+120+Math.random()*250;
-  spawnCount++;
-  // Keep guardians coming: every 2nd/3rd spawn is an enemy, with some randomness.
-  let enemy = (spawnCount%3===0) || (spawnCount%4===0 && Math.random()<.65);
-  let r=Math.random();
-  if(enemy) things.push({type:'enemy',x,y:H*.70,w:34,h:46,hp:2,hit:0});
-  else if(r<.55) things.push({type:'rock',x,y:H*.70,w:34+Math.random()*24,h:36+Math.random()*28});
-  else things.push({type:'coin',x,y:H*.54-Math.random()*100,r:9});
+  const x=W+120+Math.random()*220;
+  const r=Math.random();
+  if(r<.38) things.push({type:'rock',x,y:H*.70,w:34+Math.random()*24,h:36+Math.random()*28});
+  else if(r<.68) things.push({type:'coin',x,y:H*.54-Math.random()*100,r:9});
+  else things.push({type:'enemy',x,y:H*.70,w:34,h:46,hp:2,hit:0});
+}
+function addEnemy(){
+  const x=W+140+Math.random()*180;
+  things.push({type:'enemy',x,y:H*.70,w:34,h:46,hp:2,hit:0});
 }
 
 function sky(){
@@ -184,8 +185,6 @@ function collision(){
       hp--;things.splice(i,1);shake=8;if(hp<=0)end();
     }
     if(o.hit>0)o.hit--;
-    // Remove objects that have safely passed the player so the endless run stays clean.
-    if(o.x-world < -120) things.splice(i,1);
   }
 }
 function end(){
@@ -199,7 +198,11 @@ function loop(){
   requestAnimationFrame(loop);
   if(running){
     world+=speed;spawn-=speed;p.frame++;attackTimer=Math.max(0,attackTimer-1);
+    enemySpawn-=16.67;
     if(spawn<0){addThing();spawn=135+Math.random()*190}
+    if(enemySpawn<=0){addEnemy();enemySpawn=1200+Math.random()*1100}
+    // Remove objects that are far behind the player so the endless run stays light.
+    things=things.filter(o => (o.x-world) > -180);
     p.vy+=.62;p.y+=p.vy;
     if(p.y>=H*.65){p.y=H*.65;p.vy=0;p.ground=true}
     collision();
@@ -207,6 +210,7 @@ function loop(){
     document.getElementById('coins').textContent=coins;
     document.getElementById('hp').textContent=hp;
     document.getElementById('distance').textContent=Math.floor(world/10);
+    document.getElementById('enemyCount').textContent=things.filter(o=>o.type==='enemy').length;
   }
   ctx.save();
   if(shake>0){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake--}

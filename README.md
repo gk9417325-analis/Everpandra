@@ -1,4 +1,1 @@
-# EVERPENDRA — Phase 2
-Playable browser prototype with an Indian-inspired hero, sword attack, guardians, coins, health, temple/forest scenery and endless progression.
-
-Upload `index.html` to the root of the GitHub Pages repository and deploy from `main` / root.
+EVERPENDRA Enemy Fix 2\n\nReplace index.html in the GitHub Pages repository. Hard-refresh the page after upload (Chrome menu > Reload, or clear cached site data if needed). Enemies now spawn repeatedly every ~1.2–2.3 seconds and offscreen objects are cleaned up.
