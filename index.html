@@ -1,58 +1,155 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>EVERPENDRA — Mission 01</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>EVERPANDRA — Raat Ka Raaz</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10140f;font-family:Arial;color:white}canvas{display:block;width:100%;height:100%;touch-action:none}
-#hud{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:3;font-weight:800}.pill{background:#07100ddd;padding:9px 12px;border-radius:14px;border:1px solid #ffffff30}
-#mission{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#07100dcc;padding:8px 13px;border-radius:12px;font-size:12px;text-align:center;z-index:3}
-#intro,#win{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#38503ddd,#070a07f2);z-index:10}.panel{text-align:center;width:min(92vw,500px);padding:25px}.logo{font-size:clamp(46px,12vw,78px);margin:0;color:#e7bd62;letter-spacing:-.07em}.gold{color:#e7bd62;font-weight:800}.btn{border:0;border-radius:999px;padding:14px 23px;background:#e7bd62;color:#17130c;font-weight:900;font-size:15px}
-#controls{position:fixed;bottom:16px;left:0;right:0;display:flex;justify-content:space-between;padding:0 15px;z-index:5;pointer-events:none}.group{display:flex;gap:9px}.ctrl{pointer-events:auto;width:58px;height:58px;border-radius:50%;border:1px solid #fff4;background:#07100dcc;color:white;font-size:21px}.red{background:#8e2929cc}
-#tip{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);font-size:11px;color:#fff9;white-space:nowrap;z-index:4}
-</style></head><body>
-<canvas id="g"></canvas>
-<div id="hud"><div class="pill">❤️ <span id="hp">3</span></div><div class="pill">💰 <span id="loot">0</span>/3</div></div>
-<div id="mission">MISSION 01 · <span id="objective">Reach the Haveli</span></div>
-<div id="intro"><div class="panel"><div class="gold">EVERPENDRA</div><h1 class="logo">RAAT KA RAAZ</h1><p>Enter the old Indian haveli, collect the three hidden relics and escape without being caught.</p><button class="btn" id="start">START MISSION</button></div></div>
-<div id="win" style="display:none"><div class="panel"><div class="gold">MISSION COMPLETE</div><h1>RAAT KA RAAZ</h1><p id="result"></p><button class="btn" id="again">PLAY AGAIN</button></div></div>
-<div id="tip">Move ◀ ▶ · hide in blue shadows · distract with 🪙 · ⚔ only if necessary</div>
-<div id="controls"><div class="group"><button class="ctrl" id="l">◀</button><button class="ctrl" id="r">▶</button></div><div class="group"><button class="ctrl" id="coin">🪙</button><button class="ctrl red" id="hit">⚔</button></div></div>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10150f;font-family:Arial;color:white}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:3;pointer-events:none}
+.pill{background:#08110ddd;border:1px solid #ffffff30;border-radius:14px;padding:8px 11px;font-weight:800}
+#mission{position:fixed;top:59px;left:50%;transform:translateX(-50%);z-index:3;background:#08110dcc;border-radius:12px;padding:7px 12px;font-size:12px;white-space:nowrap}
+.overlay{position:fixed;inset:0;display:grid;place-items:center;background:#07100eea;z-index:10}
+.card{width:min(92vw,480px);padding:28px;text-align:center}
+.logo{font-size:clamp(48px,13vw,78px);line-height:.9;margin:8px 0;color:#e7bd62;text-shadow:0 4px #392315}
+.gold{color:#e7bd62;font-weight:900;letter-spacing:.2em;font-size:11px}
+p{line-height:1.5;color:#dce5df}.btn{border:0;border-radius:999px;padding:14px 24px;background:#e7bd62;color:#17130c;font-weight:900;font-size:15px}
+#controls{position:fixed;left:0;right:0;bottom:15px;display:flex;justify-content:space-between;padding:0 15px;z-index:5;pointer-events:none}
+.grp{display:flex;gap:9px}.ctrl{pointer-events:auto;width:58px;height:58px;border-radius:50%;border:1px solid #ffffff40;background:#08110dcc;color:white;font-size:22px}
+#status{position:fixed;bottom:87px;left:50%;transform:translateX(-50%);z-index:4;color:#fffd;font-size:11px;white-space:nowrap}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"><div class="pill">❤️ <span id="hp">3</span></div><div class="pill">💎 <span id="relic">0</span>/3</div></div>
+<div id="mission">MISSION 01 · <span id="obj">Collect the relics</span></div>
+
+<div id="startScreen" class="overlay"><div class="card">
+<div class="gold">EVERPANDRA</div><div class="logo">RAAT KA RAAZ</div>
+<p>Enter the old haveli, collect 3 relics, avoid the guards and escape through the gate.</p>
+<button class="btn" id="start">START MISSION</button>
+</div></div>
+
+<div id="endScreen" class="overlay" style="display:none"><div class="card">
+<div class="gold" id="endTitle">MISSION COMPLETE</div><div class="logo" style="font-size:48px">RAAT KA RAAZ</div>
+<p id="endText"></p><button class="btn" id="again">PLAY AGAIN</button>
+</div></div>
+
+<div id="status">◀ ▶ move · 🪙 distract · ⚔ defend</div>
+<div id="controls">
+<div class="grp"><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button></div>
+<div class="grp"><button class="ctrl" id="noise">🪙</button><button class="ctrl" id="attack">⚔</button></div>
+</div>
+
 <script>
-const c=document.getElementById('g'),x=c.getContext('2d');let W,H,D;function rs(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*D;c.height=H*D;x.setTransform(D,0,0,D,0,0)}addEventListener('resize',rs);rs();
-let run=false,px,py,hp,loot,cam=0,guards=[],relics=[],keys={},noise=0,inv=0;
-const worldW=2600;
-function reset(){px=180;py=H*.55;hp=3;loot=0;cam=0;noise=0;inv=0;guards=[{x:700,y:H*.43,d:1,alert:0},{x:1250,y:H*.62,d:-1,alert:0},{x:1850,y:H*.40,d:1}];relics=[{x:620,y:H*.54},{x:1430,y:H*.30},{x:2050,y:H*.60}]}
-function start(){reset();run=true;intro.style.display='none';win.style.display='none'}startBtn.onclick=start;again.onclick=start;
-function move(v){if(run){px+=v;px=Math.max(50,Math.min(worldW-80,px))}}
-l.onpointerdown=()=>keys.l=1;l.onpointerup=()=>keys.l=0;r.onpointerdown=()=>keys.r=1;r.onpointerup=()=>keys.r=0;
-coin.onpointerdown=()=>{if(run)noise=35};hit.onpointerdown=()=>{if(run)inv=12};
-addEventListener('keydown',e=>{if(e.key==='ArrowLeft')keys.l=1;if(e.key==='ArrowRight')keys.r=1;if(e.key===' ')noise=35;if(e.key==='x')inv=12});addEventListener('keyup',e=>{if(e.key==='ArrowLeft')keys.l=0;if(e.key==='ArrowRight')keys.r=0});
-function box(a,b){return Math.abs(a.x-b.x)<34&&Math.abs(a.y-b.y)<42}
-function draw(){
-let grd=x.createLinearGradient(0,0,0,H);grd.addColorStop(0,'#172e31');grd.addColorStop(1,'#d18b52');x.fillStyle=grd;x.fillRect(0,0,W,H);
-let ox=-cam;
-x.fillStyle='#25311f';x.fillRect(ox,0,worldW,H);
-for(let i=0;i<8;i++){let bx=i*350+100+ox;x.fillStyle='#172419';x.fillRect(bx,H*.22,120,H*.5);x.fillStyle='#8b573b';x.fillRect(bx+18,H*.29,84,H*.36);x.fillStyle='#c9975a';x.fillRect(bx+42,H*.29,36,20)}
-// path
-x.fillStyle='#a77b4d';x.fillRect(ox,H*.55,worldW,H*.25);
-for(let i=0;i<18;i++){let bx=i*150+80+ox;x.fillStyle='#34522f';x.beginPath();x.arc(bx,H*.45,55,0,Math.PI*2);x.fill();x.fillStyle='#50321e';x.fillRect(bx-7,H*.43,14,120)}
-// hide zones
-for(let i=0;i<5;i++){let bx=420+i*470+ox;x.fillStyle='#214c57aa';x.fillRect(bx,H*.45,90,105);x.fillStyle='#9ed6dd';x.font='12px Arial';x.fillText('HIDE',bx+27,H*.51)}
-// exit
-x.fillStyle='#e5bd65';x.fillRect(worldW-110+ox,H*.43,60,120);x.fillStyle='#281b12';x.fillRect(worldW-95+ox,H*.50,30,70);x.fillStyle='#fff';x.font='12px Arial';x.fillText('EXIT',worldW-100+ox,H*.40);
-// relics
-relics.forEach((q,i)=>{if(!q.taken){let bx=q.x+ox;x.fillStyle='#e7bd62';x.beginPath();x.arc(bx,q.y,12,0,Math.PI*2);x.fill();x.fillStyle='#fff3b0';x.font='18px serif';x.fillText('◆',bx-7,q.y+7)}});
-// guards vision
-guards.forEach(g=>{let bx=g.x+ox;x.fillStyle=g.alert>0?'#ff5b4555':'#ffd85c25';x.beginPath();x.moveTo(bx,g.y);x.lineTo(bx+g.d*180,g.y-80);x.lineTo(bx+g.d*180,g.y+80);x.closePath();x.fill();x.fillStyle='#542a25';x.beginPath();x.arc(bx,g.y-25,14,0,Math.PI*2);x.fill();x.fillStyle='#6f4030';x.fillRect(bx-15,g.y-12,30,42);x.fillStyle='#d9a45d';x.fillRect(bx-25,g.y+28,50,8)});
-// player
-let sx=px+ox;x.fillStyle='#0006';x.beginPath();x.ellipse(sx,py+47,24,6,0,0,Math.PI*2);x.fill();x.fillStyle='#eee2c7';x.fillRect(sx-16,py-5,32,38);x.fillStyle='#a82e29';x.fillRect(sx-18,py+15,36,8);x.fillStyle='#204c78';x.fillRect(sx-18,py-9,36,8);x.fillStyle='#c9854d';x.beginPath();x.arc(sx,py-20,14,0,Math.PI*2);x.fill();x.fillStyle='#241a16';x.beginPath();x.arc(sx,py-26,14,Math.PI,Math.PI*2);x.fill();x.fillStyle='#b72f2d';x.fillRect(sx-13,py-22,26,4);
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+let W,H,D,running=false,keys={},player,guards,relics,noise=0,attack=0,cam=0,hp=3,got=0,elapsed=0;
+const WORLD=3000;
+
+function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*D;canvas.height=H*D;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(D,0,0,D,0,0)}
+addEventListener('resize',resize);resize();
+
+function reset(){
+ player={x:180,y:H*.56,dir:1};
+ hp=3;got=0;elapsed=0;noise=0;attack=0;cam=0;
+ guards=[
+  {x:720,y:H*.56,dir:1,alert:0},
+  {x:1420,y:H*.42,dir:-1,alert:0},
+  {x:2160,y:H*.58,dir:1,alert:0}
+ ];
+ relics=[{x:620,y:H*.56,taken:false},{x:1530,y:H*.42,taken:false},{x:2420,y:H*.58,taken:false}];
+ updateHud();
 }
-function logic(){
-if(!run)return;
-if(keys.l)px-=3.2;if(keys.r)px+=3.2;px=Math.max(40,Math.min(worldW-70,px));cam=Math.max(0,Math.min(worldW-W,px-W*.28));
-if(noise>0)noise--;
-guards.forEach(g=>{g.x+=g.d*1.1;if(g.x<g.d?400:450||g.x>g.x){};if(g.x<400)g.d=1;if(g.x>worldW-300)g.d=-1;let dist=Math.abs(g.x-px);let facing=(g.d>0&&px>g.x)||(g.d<0&&px<g.x);if(dist<170&&facing&&Math.abs(g.y-py)<75&&!noise)g.alert=12;if(noise&&dist<260)g.alert=0;if(g.alert>0)g.alert--;if(g.alert===10&&dist<85&&!inv){hp--;document.getElementById('hp').textContent=hp;px-=g.d*60;if(hp<=0){run=false;intro.style.display='grid';document.querySelector('#intro p').textContent='You were caught. Try using the blue hiding zones and distractions.';startBtn.textContent='TRY AGAIN'}}});
-relics.forEach(q=>{if(!q.taken&&Math.abs(q.x-px)<38&&Math.abs(q.y-py)<55){q.taken=true;loot++;document.getElementById('loot').textContent=loot}});
-if(loot===3&&px>worldW-180){run=false;win.style.display='grid';result.textContent='You stole all 3 relics and escaped the haveli. Health left: '+hp+' / 3. This is only the first mission.'}
-document.getElementById('objective').textContent=loot<3?'Find the relics · '+loot+'/3':'Escape the haveli!';
+function begin(){reset();running=true;startScreen.style.display='none';endScreen.style.display='none'}
+start.onclick=begin;again.onclick=begin;
+
+function bind(id,prop){
+ const el=document.getElementById(id);
+ el.addEventListener('pointerdown',e=>{e.preventDefault();keys[prop]=true});
+ el.addEventListener('pointerup',e=>{e.preventDefault();keys[prop]=false});
+ el.addEventListener('pointercancel',()=>keys[prop]=false);
+ el.addEventListener('pointerleave',()=>keys[prop]=false);
 }
-function loop(){requestAnimationFrame(loop);logic();draw()}loop();
+bind('left','left');bind('right','right');
+noiseBtn=document.getElementById('noise');
+noiseBtn.onclick=()=>{if(running)noise=55};
+document.getElementById('attack').onclick=()=>{if(running)attack=18};
+addEventListener('keydown',e=>{if(e.key==='ArrowLeft')keys.left=true;if(e.key==='ArrowRight')keys.right=true;if(e.key===' ')noise=55;if(e.key.toLowerCase()==='x')attack=18});
+addEventListener('keyup',e=>{if(e.key==='ArrowLeft')keys.left=false;if(e.key==='ArrowRight')keys.right=false});
+
+function updateHud(){
+ hpEl.textContent=hp;relicEl.textContent=got;
+ obj.textContent=got<3?'Collect relics · '+got+'/3':'Reach the exit!';
+}
+const hpEl=document.getElementById('hp'),relicEl=document.getElementById('relic'),obj=document.getElementById('obj');
+
+function drawWorld(){
+ let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#102f38');g.addColorStop(.55,'#c77d4c');g.addColorStop(1,'#e4b36a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ const ox=-cam;
+ ctx.fillStyle='#202b1d';ctx.fillRect(ox,0,WORLD,H);
+ // distant hills
+ for(let i=0;i<10;i++){let x=i*340+ox;x%=WORLD+340;ctx.fillStyle='#193726';ctx.beginPath();ctx.arc(x,H*.36,100,0,Math.PI*2);ctx.fill()}
+ // haveli blocks
+ for(let i=0;i<6;i++){
+   let x=i*520+100+ox;
+   ctx.fillStyle='#8c583c';ctx.fillRect(x,H*.23,270,H*.34);
+   ctx.fillStyle='#c08a52';ctx.fillRect(x+18,H*.27,234,H*.08);
+   ctx.fillStyle='#5a3726';for(let j=0;j<5;j++)ctx.fillRect(x+30+j*48,H*.39,26,70);
+   ctx.fillStyle='#b9854e';ctx.beginPath();ctx.moveTo(x-15,H*.23);ctx.lineTo(x+135,H*.13);ctx.lineTo(x+285,H*.23);ctx.fill();
+ }
+ // path
+ ctx.fillStyle='#a47a4d';ctx.fillRect(ox,H*.54,WORLD,H*.26);
+ ctx.fillStyle='#38512c';ctx.fillRect(ox,H*.79,WORLD,H*.21);
+ // trees
+ for(let i=0;i<22;i++){let x=(i*145+80+ox)%(WORLD+180)-80;ctx.fillStyle='#4b321f';ctx.fillRect(x,H*.40,12,H*.24);ctx.fillStyle='#163c27';ctx.beginPath();ctx.arc(x+6,H*.37,42,0,Math.PI*2);ctx.fill()}
+ // hiding spots
+ for(let i=0;i<4;i++){let x=420+i*650+ox;ctx.fillStyle='#225a63aa';ctx.fillRect(x,H*.48,92,82);ctx.fillStyle='#b9f3f3';ctx.font='11px Arial';ctx.fillText('HIDE',x+28,H*.53)}
+ // exit
+ let ex=WORLD-100+ox;ctx.fillStyle='#e4bd65';ctx.fillRect(ex,H*.40,62,150);ctx.fillStyle='#211812';ctx.fillRect(ex+16,H*.48,30,70);ctx.fillStyle='#fff';ctx.font='11px Arial';ctx.fillText('EXIT',ex+12,H*.36);
+ // relics
+ relics.forEach(r=>{if(!r.taken){let x=r.x+ox;ctx.fillStyle='#e7bd62';ctx.beginPath();ctx.arc(x,r.y,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff2ad';ctx.font='18px serif';ctx.fillText('◆',x-7,r.y+7)}})
+ // guards and vision
+ guards.forEach(gd=>{
+   let x=gd.x+ox;ctx.fillStyle=gd.alert?'#ff4e404c':'#ffd35a26';ctx.beginPath();ctx.moveTo(x,gd.y);ctx.lineTo(x+gd.dir*190,gd.y-82);ctx.lineTo(x+gd.dir*190,gd.y+82);ctx.closePath();ctx.fill();
+   ctx.fillStyle='#4d2924';ctx.beginPath();ctx.arc(x,gd.y-28,14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#71422f';ctx.fillRect(x-16,gd.y-14,32,45);ctx.fillStyle='#d4a15c';ctx.fillRect(x-24,gd.y+28,48,6);
+ });
+ // player
+ let px=player.x+ox,py=player.y;
+ ctx.fillStyle='#0006';ctx.beginPath();ctx.ellipse(px,py+50,25,7,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#eee2c7';ctx.fillRect(px-17,py-2,34,38);
+ ctx.fillStyle='#a82e29';ctx.fillRect(px-18,py+18,36,9);
+ ctx.fillStyle='#204c78';ctx.fillRect(px-18,py-9,36,8);
+ ctx.fillStyle='#c9854d';ctx.beginPath();ctx.arc(px,py-22,15,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#241a16';ctx.beginPath();ctx.arc(px,py-29,15,Math.PI,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#b72f2d';ctx.fillRect(px-14,py-24,28,4);
+ if(attack){ctx.strokeStyle='#75dcff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(px+player.dir*20,py,38,player.dir>0?-1.4:1.7,player.dir>0?.8:4.3);ctx.stroke()}
+}
+
+function update(){
+ if(!running)return;
+ elapsed+=1/60;
+ if(keys.left){player.x-=3.4;player.dir=-1}
+ if(keys.right){player.x+=3.4;player.dir=1}
+ player.x=Math.max(50,Math.min(WORLD-160,player.x));
+ cam=Math.max(0,Math.min(WORLD-W,player.x-W*.28));
+ if(noise>0)noise--;if(attack>0)attack--;
+ guards.forEach(g=>{
+   g.x+=g.dir*1.15;
+   if(g.x<350)g.dir=1;if(g.x>WORLD-450)g.dir=-1;
+   let dist=Math.abs(g.x-player.x),facing=(g.dir>0&&player.x>g.x)||(g.dir<0&&player.x<g.x);
+   let hidden=((player.x-g.x)%650+650)%650>410&&((player.x-g.x)%650+650)%650<520;
+   if(dist<185&&facing&&!noise&&!hidden)g.alert=25;
+   if(noise&&dist<260)g.alert=0;
+   if(g.alert>0)g.alert--;
+   if(g.alert===1&&dist<70&&!attack){hp--;player.x-=g.dir*70;updateHud();if(hp<=0)lose()}
+ });
+ relics.forEach(r=>{if(!r.taken&&Math.abs(r.x-player.x)<42&&Math.abs(r.y-player.y)<58){r.taken=true;got++;updateHud()}});
+ if(got===3&&player.x>WORLD-230)win();
+}
+function win(){running=false;endTitle.textContent='MISSION COMPLETE';endText.textContent='You collected all 3 relics and escaped the haveli. Time: '+elapsed.toFixed(1)+'s · Health: '+hp+'/3';endScreen.style.display='grid'}
+function lose(){running=false;endTitle.textContent='CAUGHT';endText.textContent='The guards caught you. Use the blue hide zones and distractions, then try again.';endScreen.style.display='grid'}
+
+function loop(){requestAnimationFrame(loop);update();drawWorld()}loop();
 </script>
 </body></html>

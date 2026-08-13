@@ -1,18 +1,5 @@
-Create the first Unity scene here:
+# EVERPANDRA Playable Demo
+A single-file browser prototype. Upload `index.html` to the root of the GitHub Pages repo.
+Open the Pages URL and tap START MISSION.
 
-Mission01_RaatKaRaaz
-
-Recommended hierarchy:
-Mission01
-├── Environment
-│   ├── Haveli
-│   ├── Walls
-│   ├── HideSpot
-│   └── Exit
-├── Player
-├── Guard
-│   ├── PatrolPoints
-│   └── Vision
-├── Relic
-├── MissionManager
-└── UI
+Controls: left/right buttons or keyboard arrows. Coin = distraction. Sword = defense.
