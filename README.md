@@ -1,2 +1,18 @@
-# EVERPENDRA — Mission Demo
-Top-down stealth-adventure example: collect 3 relics, use hiding zones and distractions, avoid guards, then escape the haveli.
+Create the first Unity scene here:
+
+Mission01_RaatKaRaaz
+
+Recommended hierarchy:
+Mission01
+├── Environment
+│   ├── Haveli
+│   ├── Walls
+│   ├── HideSpot
+│   └── Exit
+├── Player
+├── Guard
+│   ├── PatrolPoints
+│   └── Vision
+├── Relic
+├── MissionManager
+└── UI
