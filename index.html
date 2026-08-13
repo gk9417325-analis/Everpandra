@@ -1,21 +1,214 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>EVERPENDRA</title>
-<style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#091008;font-family:Arial;color:#fff}canvas{width:100%;height:100%;display:block}#hud{position:fixed;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;pointer-events:none;font-weight:700;text-shadow:0 2px 5px #000}.pill{background:#0008;border:1px solid #fff3;border-radius:999px;padding:9px 13px;font-size:13px}#intro{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#203a25aa,#050705ee);z-index:5}.panel{text-align:center;padding:28px;max-width:520px}.logo{font-size:clamp(48px,12vw,90px);font-weight:900;letter-spacing:-.07em;margin:0}.sub{letter-spacing:.22em;color:#d9b56a;font-size:12px;text-transform:uppercase}button{border:0;border-radius:999px;padding:14px 25px;font-weight:800;background:#d9b56a;color:#16120a;font-size:15px}#controls{position:fixed;left:0;right:0;bottom:18px;display:flex;justify-content:space-between;padding:0 18px;pointer-events:none}.pad{display:flex;gap:10px;pointer-events:auto}.ctrl{width:58px;height:58px;border-radius:50%;border:1px solid #fff4;background:#0008;color:white;font-size:22px}#hint{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);font-size:11px;color:#ffffffaa;text-align:center;white-space:nowrap}</style></head><body>
-<canvas id="game"></canvas><div id="hud"><div class="pill">❤️ <span id="hp">3</span></div><div class="pill">🪙 <span id="coins">0</span> · <span id="distance">0</span>m</div></div>
-<div id="intro"><div class="panel"><div class="sub">AN ENDLESS INDIAN ADVENTURE</div><h1 class="logo">EVERPENDRA</h1><p>Explore ancient forests, forgotten ruins and mysterious Indian-inspired realms.</p><button id="start">START ADVENTURE</button></div></div>
-<div id="hint">Tap the screen or ↑ to jump · collect coins · avoid obstacles</div><div id="controls"><div class="pad"><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button></div><div class="pad"><button class="ctrl" id="jump">↑</button></div></div>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>EVERPENDRA — The Endless Journey</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07120e;color:#fff;font-family:system-ui,Arial}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+#hud{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:3;pointer-events:none}
+.pill{background:#07110ddd;border:1px solid #d9b56a55;border-radius:16px;padding:8px 12px;font-weight:800;font-size:13px;backdrop-filter:blur(5px)}
+#intro{position:fixed;inset:0;display:grid;place-items:center;z-index:5;background:radial-gradient(circle at 50% 38%,#355a4dcc,#07120ef2)}
+.panel{text-align:center;width:min(92vw,520px);padding:28px}
+.logo{font-size:clamp(46px,12vw,82px);line-height:.9;margin:0;color:#f0c86a;text-shadow:0 5px 0 #3d2314,0 0 35px #ffcc6655;letter-spacing:-.07em}
+.sub{margin:12px 0 5px;letter-spacing:.2em;font-size:11px;color:#ffd98a;font-weight:800}
+.tag{color:#dce6df;line-height:1.5}
+button{border:0;border-radius:999px;padding:14px 24px;font-weight:900;background:#e0b85e;color:#17120a;font-size:15px;box-shadow:0 7px 20px #0007}
+#controls{position:fixed;left:0;right:0;bottom:18px;display:flex;justify-content:space-between;padding:0 16px;z-index:4;pointer-events:none}
+.pad{display:flex;gap:9px}.ctrl{width:58px;height:58px;padding:0;border:1px solid #fff4;background:#07110dbb;color:#fff;font-size:23px;pointer-events:auto;box-shadow:none}
+#hint{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);z-index:3;color:#fff9;font-size:11px;white-space:nowrap}
+#attack{background:#8f2521cc}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud">
+  <div class="pill">❤️ <span id="hp">3</span></div>
+  <div class="pill">🪙 <span id="coins">0</span> · <span id="distance">0</span>m</div>
+</div>
+<div id="intro">
+  <div class="panel">
+    <div class="sub">AN ENDLESS INDIAN ADVENTURE</div>
+    <h1 class="logo">EVERPENDRA</h1>
+    <p class="tag" id="introText">The Endless Wanderer. Run through ancient Indian-inspired forests, protect the forgotten temples and discover how far the journey can take you.</p>
+    <button id="start">START ADVENTURE</button>
+  </div>
+</div>
+<div id="hint">↑ jump · ⚔ attack · collect coins · defeat guardians</div>
+<div id="controls">
+  <div class="pad"><button class="ctrl" id="left">◀</button><button class="ctrl" id="right">▶</button></div>
+  <div class="pad"><button class="ctrl" id="attack">⚔</button><button class="ctrl" id="jump">↑</button></div>
+</div>
+
 <script>
-const c=document.getElementById('game'),ctx=c.getContext('2d');let W,H,dpr;function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
-let running=false,p={x:0,y:0,vy:0,ground:true},world=0,speed=4,coins=0,hp=3,obs=[],spawn=0;
-function reset(){p={x:W*.25,y:H*.72,vy:0,ground:true};world=0;speed=4;coins=0;hp=3;obs=[];spawn=0}
-function jump(){if(running&&p.ground){p.vy=-12;p.ground=false}}
-function start(){reset();running=true;document.getElementById('intro').style.display='none'}
-document.getElementById('start').onclick=start;document.getElementById('jump').onclick=jump;addEventListener('keydown',e=>{if(e.key==='ArrowUp'||e.key===' ')jump()});
+const c=document.getElementById('game'),ctx=c.getContext('2d');
+let W,H,dpr, running=false, world=0, speed=4.2, coins=0, hp=3, spawn=0, attackTimer=0, shake=0;
+let p={x:0,y:0,vy:0,ground:true,frame:0,dir:1};
+let things=[];
+
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;c.style.width=W+'px';c.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+
+function reset(){
+  p={x:W*.24,y:H*.70,vy:0,ground:true,frame:0,dir:1};
+  world=0;speed=4.2;coins=0;hp=3;spawn=0;attackTimer=0;shake=0;things=[];
+}
+function start(){
+  reset();running=true;document.getElementById('intro').style.display='none';
+}
+function jump(){if(running&&p.ground){p.vy=-12.2;p.ground=false}}
+function attack(){if(running){attackTimer=16}}
+document.getElementById('start').onclick=start;
+document.getElementById('jump').onclick=jump;
+document.getElementById('attack').onclick=attack;
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowUp'||e.key===' ')jump();
+  if(e.key.toLowerCase()==='x'||e.key==='Enter')attack();
+});
 c.addEventListener('pointerdown',e=>{if(running&&e.target===c)jump()});
-function add(){let x=W+80+Math.random()*180;if(Math.random()<.58)obs.push({t:0,x,y:H*.77,w:30+Math.random()*20,h:35+Math.random()*25});else obs.push({t:1,x,y:H*.62-Math.random()*80,r:10});if(Math.random()<.35)obs.push({t:1,x:x+80,y:H*.6-Math.random()*100,r:10})}
-function draw(){let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#173a43');g.addColorStop(.5,'#d4874f');g.addColorStop(1,'#e6b66b');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);let ground=H*.77;ctx.fillStyle='#1b351e';ctx.fillRect(0,ground,W,H-ground);
-for(let i=0;i<8;i++){let x=((i*180-world*.18)%(W+220)+W+220)%(W+220)-100;ctx.fillStyle='#12301a';ctx.beginPath();ctx.moveTo(x,ground);ctx.lineTo(x+45,ground-150);ctx.lineTo(x+90,ground);ctx.fill()}
-let tx=((W*.7-world*.12)%(W+300)+W+300)%(W+300)-150;ctx.fillStyle='#7a4930';ctx.fillRect(tx,ground-70,90,50);ctx.beginPath();ctx.moveTo(tx-8,ground-70);ctx.lineTo(tx+45,ground-115);ctx.lineTo(tx+98,ground-70);ctx.fill();ctx.fillStyle='#d6a05b';ctx.fillRect(tx+37,ground-52,17,32);
-obs.forEach(o=>{let x=o.x-world;if(o.t===0){ctx.fillStyle='#4c4b43';ctx.beginPath();ctx.moveTo(x,o.y);ctx.lineTo(x+o.w*.4,o.y-o.h);ctx.lineTo(x+o.w,o.y);ctx.fill()}else{ctx.fillStyle='#e7b74d';ctx.beginPath();ctx.arc(x,o.y,o.r,0,Math.PI*2);ctx.fill()}});
-ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle='#b97943';ctx.beginPath();ctx.arc(17,-10,15,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d9b56a';ctx.fillRect(2,4,30,37);ctx.fillStyle='#2d4c32';ctx.fillRect(4,41,9,17);ctx.fillRect(21,41,9,17);ctx.fillStyle='#9b2e25';ctx.fillRect(2,11,30,8);ctx.restore()}
-function loop(){requestAnimationFrame(loop);if(running){world+=speed;spawn-=speed;if(spawn<0){add();spawn=150+Math.random()*150}p.vy+=.6;p.y+=p.vy;if(p.y>=H*.72){p.y=H*.72;p.vy=0;p.ground=true}for(let i=obs.length-1;i>=0;i--){let o=obs[i],x=o.x-world;if(o.t===1&&Math.abs(x-(p.x+15))<25&&Math.abs(o.y-p.y)<55){coins++;obs.splice(i,1)}else if(o.t===0&&x<p.x+35&&x+o.w>p.x&&p.y+50>o.y-o.h){hp--;obs.splice(i,1);if(hp<=0){running=false;document.getElementById('intro').style.display='grid';document.querySelector('.sub').textContent='RUN OVER';document.querySelector('.panel p').textContent='Coins: '+coins+' · Distance: '+Math.floor(world/10)+'m';document.getElementById('start').textContent='RUN AGAIN'}}}speed=Math.min(9,4+world/5000);document.getElementById('coins').textContent=coins;document.getElementById('hp').textContent=hp;document.getElementById('distance').textContent=Math.floor(world/10)}draw()}loop();
-</script></body></html>
+
+function addThing(){
+  let x=W+120+Math.random()*250;
+  let r=Math.random();
+  if(r<.40) things.push({type:'rock',x,y:H*.70,w:34+Math.random()*24,h:36+Math.random()*28});
+  else if(r<.68) things.push({type:'coin',x,y:H*.54-Math.random()*100,r:9});
+  else things.push({type:'enemy',x,y:H*.70,w:34,h:46,hp:2,hit:0});
+}
+
+function sky(){
+  let g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#123d4c');g.addColorStop(.48,'#d88c58');g.addColorStop(1,'#f0c477');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#ffd27a88';ctx.beginPath();ctx.arc(W*.78,H*.20,38,0,Math.PI*2);ctx.fill();
+}
+function mountains(){
+  let ground=H*.70;
+  ctx.fillStyle='#284936';
+  for(let i=0;i<7;i++){
+    let x=((i*190-world*.08)%(W+300)+W+300)%(W+300)-150;
+    ctx.beginPath();ctx.moveTo(x,ground);ctx.lineTo(x+80,ground-150);ctx.lineTo(x+160,ground);ctx.fill();
+  }
+}
+function trees(){
+  let ground=H*.70;
+  for(let i=0;i<11;i++){
+    let x=((i*125-world*.16)%(W+180)+W+180)%(W+180)-90;
+    ctx.fillStyle='#4d301e';ctx.fillRect(x+34,ground-95,12,95);
+    ctx.fillStyle='#123b25';ctx.beginPath();ctx.arc(x+40,ground-105,45,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#1b5a31';ctx.beginPath();ctx.arc(x+15,ground-82,30,0,Math.PI*2);ctx.fill();
+  }
+}
+function temple(){
+  let ground=H*.70;
+  let x=((W*.72-world*.10)%(W+500)+W+500)%(W+500)-250;
+  ctx.fillStyle='#8b573b';ctx.fillRect(x,ground-105,150,105);
+  ctx.fillStyle='#bd8151';ctx.fillRect(x+18,ground-78,114,78);
+  ctx.fillStyle='#e0ad67';
+  ctx.beginPath();ctx.moveTo(x-12,ground-105);ctx.lineTo(x+75,ground-155);ctx.lineTo(x+162,ground-105);ctx.fill();
+  ctx.fillStyle='#50301e';ctx.fillRect(x+61,ground-58,28,58);
+  ctx.fillStyle='#f5c86b';ctx.fillRect(x+72,ground-52,7,7);
+}
+function ground(){
+  let y=H*.70;ctx.fillStyle='#18321d';ctx.fillRect(0,y,W,H-y);
+  ctx.fillStyle='#385b2d';ctx.fillRect(0,y,W,8);
+}
+function hero(){
+  let bob=p.ground?Math.sin(p.frame*.18)*2:0;
+  ctx.save();ctx.translate(p.x,p.y+bob);ctx.scale(p.dir,1);
+  // shadow
+  ctx.fillStyle='#0005';ctx.beginPath();ctx.ellipse(17,60,28,7,0,0,Math.PI*2);ctx.fill();
+  // legs / boots
+  ctx.fillStyle='#35261e';ctx.fillRect(4,38,11,23);ctx.fillRect(21,38,11,23);
+  ctx.fillStyle='#b87b42';ctx.fillRect(1,57,16,6);ctx.fillRect(19,57,16,6);
+  // white dhoti
+  ctx.fillStyle='#eee2c7';ctx.fillRect(1,4,34,38);
+  // red waist cloth
+  ctx.fillStyle='#a82e29';ctx.fillRect(0,25,37,9);
+  ctx.beginPath();ctx.moveTo(25,27);ctx.lineTo(40,55);ctx.lineTo(28,55);ctx.closePath();ctx.fill();
+  // blue scarf
+  ctx.fillStyle='#204c78';ctx.beginPath();ctx.moveTo(1,7);ctx.lineTo(33,7);ctx.lineTo(47,28);ctx.lineTo(33,25);ctx.lineTo(22,12);ctx.lineTo(10,29);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#2e6393';ctx.fillRect(2,0,35,9);
+  // arms
+  ctx.fillStyle='#c9854d';ctx.fillRect(-6,12,9,23);ctx.fillRect(33,12,9,23);
+  // head
+  ctx.fillStyle='#c9854d';ctx.beginPath();ctx.arc(18,-9,15,0,Math.PI*2);ctx.fill();
+  // hair
+  ctx.fillStyle='#241a16';ctx.beginPath();ctx.arc(18,-16,15,Math.PI,Math.PI*2);ctx.fill();
+  // red headband
+  ctx.fillStyle='#b72f2d';ctx.fillRect(4,-11,28,5);ctx.fillRect(30,-10,16,3);
+  // amulet
+  ctx.fillStyle='#46b9d7';ctx.beginPath();ctx.arc(18,9,5,0,Math.PI*2);ctx.fill();
+  // sword
+  ctx.save();ctx.translate(38,17);ctx.rotate(attackTimer?-.55:.15);
+  ctx.fillStyle='#e6bd61';ctx.fillRect(-3,0,6,19);
+  ctx.fillStyle='#a9eaff';ctx.beginPath();ctx.moveTo(0,-33);ctx.lineTo(5,0);ctx.lineTo(0,12);ctx.lineTo(-5,0);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#d9b56a';ctx.fillRect(-12,0,24,4);ctx.restore();
+  if(attackTimer){
+    ctx.strokeStyle='#69d8ff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(35,5,34,-1.7,.8);ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawThing(o){
+  let x=o.x-world;
+  if(o.type==='rock'){
+    ctx.fillStyle='#54534a';ctx.beginPath();ctx.moveTo(x,o.y);ctx.lineTo(x+o.w*.45,o.y-o.h);ctx.lineTo(x+o.w,o.y);ctx.closePath();ctx.fill();
+  } else if(o.type==='coin'){
+    ctx.fillStyle='#ffd15c';ctx.beginPath();ctx.arc(x,o.y,o.r,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#9b6821';ctx.lineWidth=2;ctx.stroke();
+  } else {
+    // guardian
+    ctx.fillStyle='#38231f';ctx.fillRect(x,o.y-o.h,34,o.h);
+    ctx.fillStyle='#9b3029';ctx.beginPath();ctx.arc(x+17,o.y-o.h-7,13,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#f5c96b';ctx.fillRect(x+8,o.y-o.h-10,4,3);ctx.fillRect(x+22,o.y-o.h-10,4,3);
+    ctx.fillStyle='#5e3c2b';ctx.fillRect(x-7,o.y-30,7,28);ctx.fillRect(x+34,o.y-30,7,28);
+    if(o.hit>0){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(x-4,o.y-o.h-20,42,60)}
+  }
+}
+function collision(){
+  for(let i=things.length-1;i>=0;i--){
+    let o=things[i],x=o.x-world;
+    if(o.type==='coin' && Math.abs(x-(p.x+18))<25 && Math.abs(o.y-(p.y+5))<60){
+      coins++;things.splice(i,1);continue;
+    }
+    if(o.type==='enemy'){
+      if(attackTimer && x<p.x+65 && x+o.w>p.x-10){o.hp--;o.hit=8;attackTimer=0;if(o.hp<=0){coins+=3;things.splice(i,1);continue}}
+      if(x<p.x+35&&x+o.w>p.x&&p.y>o.y-o.h+5&&p.y<o.y+10){
+        hp--;things.splice(i,1);shake=8;if(hp<=0)end();
+      }
+    }
+    if(o.type==='rock' && x<p.x+35&&x+o.w>p.x&&p.y+55>o.y-o.h){
+      hp--;things.splice(i,1);shake=8;if(hp<=0)end();
+    }
+    if(o.hit>0)o.hit--;
+  }
+}
+function end(){
+  running=false;
+  document.getElementById('intro').style.display='grid';
+  document.querySelector('.sub').textContent='JOURNEY ENDED';
+  document.getElementById('introText').textContent='Everpendra travelled '+Math.floor(world/10)+'m and collected '+coins+' coins.';
+  document.getElementById('start').textContent='RUN AGAIN';
+}
+function loop(){
+  requestAnimationFrame(loop);
+  if(running){
+    world+=speed;spawn-=speed;p.frame++;attackTimer=Math.max(0,attackTimer-1);
+    if(spawn<0){addThing();spawn=135+Math.random()*190}
+    p.vy+=.62;p.y+=p.vy;
+    if(p.y>=H*.65){p.y=H*.65;p.vy=0;p.ground=true}
+    collision();
+    speed=Math.min(8.8,4.2+world/6500);
+    document.getElementById('coins').textContent=coins;
+    document.getElementById('hp').textContent=hp;
+    document.getElementById('distance').textContent=Math.floor(world/10);
+  }
+  ctx.save();
+  if(shake>0){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);shake--}
+  sky();mountains();trees();temple();ground();
+  things.forEach(drawThing);hero();ctx.restore();
+}
+loop();
+</script>
+</body>
+</html>
