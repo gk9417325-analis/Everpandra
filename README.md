@@ -1,1 +1,2 @@
-EVERPENDRA Enemy Fix 2\n\nReplace index.html in the GitHub Pages repository. Hard-refresh the page after upload (Chrome menu > Reload, or clear cached site data if needed). Enemies now spawn repeatedly every ~1.2–2.3 seconds and offscreen objects are cleaned up.
+# EVERPENDRA — Mission Demo
+Top-down stealth-adventure example: collect 3 relics, use hiding zones and distractions, avoid guards, then escape the haveli.
