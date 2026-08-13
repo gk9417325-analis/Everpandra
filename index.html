@@ -43,7 +43,7 @@ button{border:0;border-radius:999px;padding:14px 24px;font-weight:900;background
 
 <script>
 const c=document.getElementById('game'),ctx=c.getContext('2d');
-let W,H,dpr, running=false, world=0, speed=4.2, coins=0, hp=3, spawn=0, attackTimer=0, shake=0;
+let W,H,dpr, running=false, world=0, speed=4.2, coins=0, hp=3, spawn=0, attackTimer=0, shake=0, spawnCount=0;
 let p={x:0,y:0,vy:0,ground:true,frame:0,dir:1};
 let things=[];
 
@@ -52,7 +52,7 @@ addEventListener('resize',resize);resize();
 
 function reset(){
   p={x:W*.24,y:H*.70,vy:0,ground:true,frame:0,dir:1};
-  world=0;speed=4.2;coins=0;hp=3;spawn=0;attackTimer=0;shake=0;things=[];
+  world=0;speed=4.2;coins=0;hp=3;spawn=0;attackTimer=0;shake=0;spawnCount=0;things=[];
 }
 function start(){
   reset();running=true;document.getElementById('intro').style.display='none';
@@ -70,10 +70,13 @@ c.addEventListener('pointerdown',e=>{if(running&&e.target===c)jump()});
 
 function addThing(){
   let x=W+120+Math.random()*250;
+  spawnCount++;
+  // Keep guardians coming: every 2nd/3rd spawn is an enemy, with some randomness.
+  let enemy = (spawnCount%3===0) || (spawnCount%4===0 && Math.random()<.65);
   let r=Math.random();
-  if(r<.40) things.push({type:'rock',x,y:H*.70,w:34+Math.random()*24,h:36+Math.random()*28});
-  else if(r<.68) things.push({type:'coin',x,y:H*.54-Math.random()*100,r:9});
-  else things.push({type:'enemy',x,y:H*.70,w:34,h:46,hp:2,hit:0});
+  if(enemy) things.push({type:'enemy',x,y:H*.70,w:34,h:46,hp:2,hit:0});
+  else if(r<.55) things.push({type:'rock',x,y:H*.70,w:34+Math.random()*24,h:36+Math.random()*28});
+  else things.push({type:'coin',x,y:H*.54-Math.random()*100,r:9});
 }
 
 function sky(){
@@ -181,6 +184,8 @@ function collision(){
       hp--;things.splice(i,1);shake=8;if(hp<=0)end();
     }
     if(o.hit>0)o.hit--;
+    // Remove objects that have safely passed the player so the endless run stays clean.
+    if(o.x-world < -120) things.splice(i,1);
   }
 }
 function end(){
